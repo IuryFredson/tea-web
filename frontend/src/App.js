@@ -6,6 +6,9 @@ import { Sun, Moon, Menu, X, Puzzle, Users, Book, Heart } from "lucide-react";
 import HomePage from "./pages/HomePage";
 import ForumPage from "./pages/ForumPage";
 
+import NavLink from "./components/NavLink";
+import MobileNavLink from "./components/MobileNavLink";
+
 const App = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -137,33 +140,5 @@ const App = () => {
     </Router>
   );
 };
-
-const NavLink = ({ href, children, icon, isDarkMode }) => (
-  <Link
-    to={href}
-    className={`flex items-center space-x-2 ${
-      isDarkMode
-        ? "text-white hover:text-blue-400"
-        : "text-black hover:text-blue-600"
-    } transition-colors`}
-  >
-    {icon}
-    <span>{children}</span>
-  </Link>
-);
-
-const MobileNavLink = ({ href, children, icon, isDarkMode }) => (
-  <Link
-    to={href}
-    className={`flex items-center space-x-2 ${
-      isDarkMode
-        ? "text-white hover:text-blue-400"
-        : "text-black hover:text-blue-600"
-    } transition-colors p-2 rounded-lg`}
-  >
-    {icon}
-    <span>{children}</span>
-  </Link>
-);
 
 export default App;
