@@ -1,0 +1,26 @@
+services:
+  db:
+    image: postgres:16
+    container_name: teaweb_db
+    environment:
+      POSTGRES_DB: teaweb
+      POSTGRES_USER: teaweb
+      POSTGRES_PASSWORD: teaweb
+    ports:
+      - "5432:5432"
+    volumes:
+      - teaweb_pgdata:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4:8
+    container_name: teaweb_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@local.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+
+volumes:
+  teaweb_pgdata:
