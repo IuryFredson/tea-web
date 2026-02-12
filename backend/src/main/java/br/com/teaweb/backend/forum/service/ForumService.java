@@ -1,14 +1,13 @@
 package br.com.teaweb.backend.forum.service;
 
-import br.com.teaweb.backend.forum.api.dto.CreatePostRequest;
-import br.com.teaweb.backend.forum.api.dto.PostResponse;
 import br.com.teaweb.backend.forum.api.dto.CreateCommentRequest;
+import br.com.teaweb.backend.forum.api.dto.CreatePostRequest;
 import br.com.teaweb.backend.forum.api.dto.CommentResponse;
-import br.com.teaweb.backend.forum.domain.Post;
+import br.com.teaweb.backend.forum.api.dto.PostResponse;
 import br.com.teaweb.backend.forum.domain.Comment;
-import br.com.teaweb.backend.forum.repo.PostRepository;
+import br.com.teaweb.backend.forum.domain.Post;
 import br.com.teaweb.backend.forum.repo.CommentRepository;
-
+import br.com.teaweb.backend.forum.repo.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -26,29 +25,24 @@ public class ForumService {
 
     public Page<PostResponse> listPosts(int page, int size) {
         var pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        return postRepository.findAll(pageable)
-                .map(this::toPostResponse);
+        return postRepository.findAll(pageable).map(this::toPostResponse);
     }
 
     public PostResponse getPost(UUID postId) {
         var post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post não encontrado"));
-
         return toPostResponse(post);
     }
 
-    public PostResponse createPost(CreatePostRequest req) {
+    public PostResponse createPost(CreatePostRequest req, UUID userId, String email) {
         var now = Instant.now();
 
         var post = Post.builder()
                 .id(UUID.randomUUID())
                 .title(req.title())
                 .content(req.content())
-                .authorName(
-                        req.authorName() == null || req.authorName().isBlank()
-                                ? "Anônimo"
-                                : req.authorName()
-                )
+                .authorId(userId)
+                .authorName(email)
                 .createdAt(now)
                 .build();
 
@@ -56,7 +50,6 @@ public class ForumService {
     }
 
     public List<CommentResponse> listComments(UUID postId) {
-
         if (!postRepository.existsById(postId)) {
             throw new RuntimeException("Post não encontrado");
         }
@@ -67,8 +60,7 @@ public class ForumService {
                 .toList();
     }
 
-    public CommentResponse createComment(UUID postId, CreateCommentRequest req) {
-
+    public CommentResponse createComment(UUID postId, CreateCommentRequest req, UUID userId, String email) {
         if (!postRepository.existsById(postId)) {
             throw new RuntimeException("Post não encontrado");
         }
@@ -79,11 +71,8 @@ public class ForumService {
                 .id(UUID.randomUUID())
                 .postId(postId)
                 .content(req.content())
-                .authorName(
-                        req.authorName() == null || req.authorName().isBlank()
-                                ? "Anônimo"
-                                : req.authorName()
-                )
+                .authorId(userId)
+                .authorName(email)
                 .createdAt(now)
                 .build();
 

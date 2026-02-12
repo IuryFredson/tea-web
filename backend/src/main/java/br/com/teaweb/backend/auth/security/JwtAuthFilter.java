@@ -45,6 +45,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             DecodedJWT jwt = jwtService.verify(token);
 
             UUID userId = UUID.fromString(jwt.getSubject());
+
+            String email = jwt.getClaim("email").asString();
             String roleStr = jwt.getClaim("role").asString();
             Role role = Role.valueOf(roleStr);
 
@@ -53,6 +55,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     null,
                     List.of(new SimpleGrantedAuthority("ROLE_" + role.name()))
             );
+
+            auth.setDetails(email);
 
             SecurityContextHolder.getContext().setAuthentication(auth);
         } catch (Exception ex) {

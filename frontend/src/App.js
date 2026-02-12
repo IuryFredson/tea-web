@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { BrowserRouter as Router, Routes, Route} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 import { Sun, Moon, Menu, X, Puzzle, Users, Book, Heart } from "lucide-react";
 
 import HomePage from "./pages/HomePage";
 import ForumPage from "./pages/ForumPage";
+import PostPage from "./pages/PostPage";
 
 import NavLink from "./components/NavLink";
 import MobileNavLink from "./components/MobileNavLink";

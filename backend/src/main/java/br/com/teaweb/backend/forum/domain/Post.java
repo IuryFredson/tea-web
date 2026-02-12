@@ -23,6 +23,9 @@ public class Post {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
+    @Column(name = "author_id")
+    private UUID authorId;
+
     @Column(name = "author_name")
     private String authorName;
 

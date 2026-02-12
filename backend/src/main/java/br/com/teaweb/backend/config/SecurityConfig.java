@@ -1,13 +1,14 @@
 package br.com.teaweb.backend.config;
 
 import br.com.teaweb.backend.auth.security.JwtAuthFilter;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -28,8 +29,17 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(Customizer.withDefaults())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(STATELESS))
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((req, res, e) ->
+                                res.sendError(HttpServletResponse.SC_UNAUTHORIZED))
+                        .accessDeniedHandler((req, res, e) ->
+                                res.sendError(HttpServletResponse.SC_FORBIDDEN))
+                )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/auth/me").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/posts/**").permitAll()
                         .anyRequest().authenticated()
                 )
