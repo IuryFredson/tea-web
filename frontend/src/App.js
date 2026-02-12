@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { BrowserRouter as Router, Routes, Route} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 import { Sun, Moon, Menu, X, Puzzle, Users, Book, Heart } from "lucide-react";
 
 import HomePage from "./pages/HomePage";
 import ForumPage from "./pages/ForumPage";
+import PostPage from "./pages/PostPage";
 
 import NavLink from "./components/NavLink";
 import MobileNavLink from "./components/MobileNavLink";
@@ -36,6 +37,7 @@ const App = () => {
                 >
                   {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
                 </button>
+
                 <div className="flex items-center space-x-2">
                   <Puzzle className="w-8 h-8 text-blue-600" />
                   <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-blue-400">
@@ -52,6 +54,7 @@ const App = () => {
                 >
                   Início
                 </NavLink>
+
                 <NavLink
                   href="/sobre"
                   icon={<Book size={18} />}
@@ -59,6 +62,7 @@ const App = () => {
                 >
                   Sobre Autismo
                 </NavLink>
+
                 <NavLink
                   href="/forum"
                   icon={<Users size={18} />}
@@ -66,6 +70,7 @@ const App = () => {
                 >
                   Fórum
                 </NavLink>
+
                 <NavLink
                   href="/jogos"
                   icon={<Puzzle size={18} />}
@@ -82,6 +87,7 @@ const App = () => {
                 >
                   {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
                 </button>
+
                 <button className="bg-[#90EE90] text-gray-800 px-4 py-2 rounded-lg hover:bg-[#98FB98] transition-all transform hover:scale-105">
                   Entrar
                 </button>
@@ -97,6 +103,7 @@ const App = () => {
                 >
                   Início
                 </MobileNavLink>
+
                 <MobileNavLink
                   href="/sobre"
                   icon={<Book size={18} />}
@@ -104,6 +111,7 @@ const App = () => {
                 >
                   Sobre Autismo
                 </MobileNavLink>
+
                 <MobileNavLink
                   href="/forum"
                   icon={<Users size={18} />}
@@ -111,6 +119,7 @@ const App = () => {
                 >
                   Fórum
                 </MobileNavLink>
+
                 <MobileNavLink
                   href="/jogos"
                   icon={<Puzzle size={18} />}
@@ -122,17 +131,21 @@ const App = () => {
             )}
           </nav>
         </header>
+
         <main>
           <Routes>
             <Route path="/" element={<HomePage isDarkMode={isDarkMode} />} />
             <Route path="/forum" element={<ForumPage />} />
+
+            <Route path="/post/:id" element={<PostPage />} />
+
             <Route
               path="/sobre"
-              element={<HomePage isDarkMode={isDarkMode} />} // TODO: Criar SobrePage
+              element={<HomePage isDarkMode={isDarkMode} />} // TODO: Create SobrePage
             />
             <Route
               path="/jogos"
-              element={<HomePage isDarkMode={isDarkMode} />} // TODO: Criar JogosPage
+              element={<HomePage isDarkMode={isDarkMode} />} // TODO: Create JogosPage
             />
           </Routes>
         </main>

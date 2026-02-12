@@ -1,0 +1,20 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/teaweb
+    username: teaweb
+    password: teaweb
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+app:
+  cors:
+    allowed-origins: "http://localhost:3000,http://localhost:5173"
+
+  jwt:
+    issuer: "teaweb"
+    secret: "4f8c9a2b1e7d6c5a9f3b0d2e8c7a1f6b9d4e2c3a7f5b8d1c6e9a0b2d3f4c5e7"
+    exp-minutes: 60
