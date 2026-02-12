@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8080";
@@ -33,11 +33,14 @@ const ForumPage = () => {
 
   const isAuthed = useMemo(() => token && token.trim().length > 0, [token]);
 
-  function authHeaders(extra = {}) {
-    const headers = { ...extra };
-    if (isAuthed) headers.Authorization = `Bearer ${token}`;
-    return headers;
-  }
+  const authHeaders = useCallback(
+    (extra = {}) => {
+      const headers = { ...extra };
+      if (isAuthed) headers.Authorization = `Bearer ${token}`;
+      return headers;
+    },
+    [isAuthed, token]
+  );
 
   const canSubmitPost = useMemo(() => {
     return (
@@ -45,58 +48,64 @@ const ForumPage = () => {
     );
   }, [title, content, submittingPost]);
 
-  async function fetchPosts(currentPage = page) {
-    try {
-      setError("");
-      setLoading(true);
+  const fetchPosts = useCallback(
+    async (currentPage = page) => {
+      try {
+        setError("");
+        setLoading(true);
 
-      const res = await fetch(
-        `${API_URL}/api/posts?page=${currentPage}&size=${size}`
-      );
-      if (!res.ok)
-        throw new Error(`Falha ao buscar posts (HTTP ${res.status})`);
+        const res = await fetch(
+          `${API_URL}/api/posts?page=${currentPage}&size=${size}`
+        );
+        if (!res.ok)
+          throw new Error(`Falha ao buscar posts (HTTP ${res.status})`);
 
-      const data = await res.json();
-      setPosts(data.content ?? []);
-    } catch (e) {
-      console.error(e);
-      setError("Não foi possível carregar os posts.");
-      setPosts([]);
-    } finally {
-      setLoading(false);
-    }
-  }
+        const data = await res.json();
+        setPosts(data.content ?? []);
+      } catch (e) {
+        console.error(e);
+        setError("Não foi possível carregar os posts.");
+        setPosts([]);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [page, size]
+  );
 
-  async function fetchMe(currentToken = token) {
-    if (!currentToken) {
-      setMe(null);
-      return;
-    }
-
-    try {
-      const res = await fetch(`${API_URL}/api/auth/me`, {
-        headers: { Authorization: `Bearer ${currentToken}` },
-      });
-
-      if (!res.ok) {
+  const fetchMe = useCallback(
+    async (currentToken = token) => {
+      if (!currentToken) {
         setMe(null);
         return;
       }
 
-      const data = await res.json();
-      setMe(data);
-    } catch {
-      setMe(null);
-    }
-  }
+      try {
+        const res = await fetch(`${API_URL}/api/auth/me`, {
+          headers: { Authorization: `Bearer ${currentToken}` },
+        });
+
+        if (!res.ok) {
+          setMe(null);
+          return;
+        }
+
+        const data = await res.json();
+        setMe(data);
+      } catch {
+        setMe(null);
+      }
+    },
+    [token]
+  );
 
   useEffect(() => {
     fetchPosts(page);
-  }, [page]);
+  }, [page, fetchPosts]);
 
   useEffect(() => {
     fetchMe(token);
-  }, [token]);
+  }, [token, fetchMe]);
 
   async function handleLogin(e) {
     e.preventDefault();
@@ -181,7 +190,7 @@ const ForumPage = () => {
     }
   }
 
-  async function fetchComments(postId) {
+  const fetchComments = useCallback(async (postId) => {
     try {
       setLoadingComments((m) => ({ ...m, [postId]: true }));
 
@@ -200,59 +209,65 @@ const ForumPage = () => {
     } finally {
       setLoadingComments((m) => ({ ...m, [postId]: false }));
     }
-  }
+  }, []);
 
-  async function handleToggleComments(postId) {
-    setOpenComments((m) => {
-      const next = !m[postId];
-      return { ...m, [postId]: next };
-    });
-
-    const alreadyLoaded = commentsByPostId[postId] !== undefined;
-    if (!alreadyLoaded) {
-      await fetchComments(postId);
-    }
-  }
-
-  async function handleCreateComment(postId) {
-    const draft = (commentDraft[postId] || "").trim();
-    if (draft.length < 1) return;
-
-    if (!isAuthed) {
-      setError("Você precisa estar logado (JWT) para comentar.");
-      return;
-    }
-
-    try {
-      setSubmittingComment((m) => ({ ...m, [postId]: true }));
-      setError("");
-
-      const res = await fetch(`${API_URL}/api/posts/${postId}/comments`, {
-        method: "POST",
-        headers: authHeaders({ "Content-Type": "application/json" }),
-        body: JSON.stringify({
-          content: draft,
-          authorName: "IGNORADO",
-        }),
+  const handleToggleComments = useCallback(
+    async (postId) => {
+      setOpenComments((m) => {
+        const next = !m[postId];
+        return { ...m, [postId]: next };
       });
 
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(
-          text || `Falha ao criar comentário (HTTP ${res.status})`
-        );
+      const alreadyLoaded = commentsByPostId[postId] !== undefined;
+      if (!alreadyLoaded) {
+        await fetchComments(postId);
+      }
+    },
+    [commentsByPostId, fetchComments]
+  );
+
+  const handleCreateComment = useCallback(
+    async (postId) => {
+      const draft = (commentDraft[postId] || "").trim();
+      if (draft.length < 1) return;
+
+      if (!isAuthed) {
+        setError("Você precisa estar logado (JWT) para comentar.");
+        return;
       }
 
-      setCommentDraft((m) => ({ ...m, [postId]: "" }));
-      await fetchComments(postId);
-      setOpenComments((m) => ({ ...m, [postId]: true }));
-    } catch (e) {
-      console.error(e);
-      setError("Não foi possível criar o comentário. Tente novamente.");
-    } finally {
-      setSubmittingComment((m) => ({ ...m, [postId]: false }));
-    }
-  }
+      try {
+        setSubmittingComment((m) => ({ ...m, [postId]: true }));
+        setError("");
+
+        const res = await fetch(`${API_URL}/api/posts/${postId}/comments`, {
+          method: "POST",
+          headers: authHeaders({ "Content-Type": "application/json" }),
+          body: JSON.stringify({
+            content: draft,
+            authorName: "IGNORADO",
+          }),
+        });
+
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(
+            text || `Falha ao criar comentário (HTTP ${res.status})`
+          );
+        }
+
+        setCommentDraft((m) => ({ ...m, [postId]: "" }));
+        await fetchComments(postId);
+        setOpenComments((m) => ({ ...m, [postId]: true }));
+      } catch (e) {
+        console.error(e);
+        setError("Não foi possível criar o comentário. Tente novamente.");
+      } finally {
+        setSubmittingComment((m) => ({ ...m, [postId]: false }));
+      }
+    },
+    [authHeaders, commentDraft, fetchComments, isAuthed]
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
