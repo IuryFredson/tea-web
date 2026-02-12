@@ -104,6 +104,7 @@ At the same time, the project is designed to demonstrate:
 
 ## 📁 Project Structure
 
+```txt
 tea-web/
 │
 ├── backend/              # Spring Boot API
@@ -118,6 +119,8 @@ tea-web/
 ├── docker-compose.yml    # Local PostgreSQL + pgAdmin
 │
 └── README.md
+
+```
 
 ---
 
